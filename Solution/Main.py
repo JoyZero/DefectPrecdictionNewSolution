@@ -78,7 +78,7 @@ class MainClass:
         matrix2 = self.lambda2 * matrix2
         vector_b = self.lambda2 * vector_b
         matrix_a = matrix_l + matrix2
-        f = np.linalg.lstsq(matrix_a, vector_b)[0]
+        f = np.linalg.lstsq(matrix_a, vector_b, rcond=None)[0]
         self.f = f
 
     def update_w(self):
@@ -91,11 +91,15 @@ class MainClass:
         index = 0
         while index < self.pre_version_num:
             w_index = indexes[index]
-            if w_index <= p:
-                self.w[w_index] = theta - vector_v[w_index]
+            if index < p:
+                self.w[w_index] = (theta - vector_v[w_index] ) / (2 * gamma)
             else:
                 self.w[w_index] = 0
             index += 1
+        print('=== w:', self.w)
+        # for w in self.w:
+        #     sum += w
+        # print(sum)
 
     def calc_p(self, vector_v, gamma):
         p = vector_v.__len__()
@@ -107,13 +111,7 @@ class MainClass:
         return p
 
     def calc_theta(self, vector_v, gamma, p):
-        theta = 2 * gamma
-        index = 0
-        while index < p:
-            theta += vector_v[index]
-            index += 1
-        if p == vector_v.__len__():
-            p -= 1
+        theta = 2 * gamma + sum(vector_v[:p])
         theta /= p
         return theta
 
@@ -140,7 +138,7 @@ class MainClass:
         evaluator = Eval.Evaluator(self.dir, self.name)
         pre_value = self.function_value()
         while count < 5:
-            print(pre_value)
+            print('=== function value: ', pre_value)
             self.update_f()
             self.update_w()
             value = self.function_value()
@@ -255,13 +253,13 @@ class MainClass:
 
     @classmethod
     def params_generator(cls):
-        value_set = [0.01, 0.1, 1, 10, 100]
+        value_set = [0.01, 0.1, 1, 10, 10000]
         params_list = []
         index1 = 0
         while index1 < value_set.__len__():
             index2 = 0
             while index2 < value_set.__len__():
-                index3 = 0
+                index3 = 4
                 while index3 < value_set.__len__():
                     params_list.append([value_set[index1], value_set[index2], value_set[index3]])
                     index3 += 1
@@ -277,44 +275,16 @@ if __name__ == '__main__':
     lambda1 = 1
     lambda2 = 1
     lambda3 = 1
-    params_list = MainClass.params_generator()
-    print(params_list)
-    eval_res_list = []
-    for name in tera:
-        print('============' + name + '===========')
-        for params in params_list:
-            print('--------' + str(params) + '---------')
-            main = MainClass(name, myUtil.SIM_COS, dir_path, params[0], params[1], params[2])
-            eval_res = main.run()
-            eval_res_list.append(eval_res)
-        myUtil.write_eval_result(main.dir, main.name, params_list, eval_res_list)
-    # nums = [2, 1, 6, 4, 9]
-    # res = np.argsort(nums)
-    # print(res)
-
-    # f = np.array([1, 2])
-    # L = np.array([[1, 3],
-    #               [1, 2]])
-    # res = np.dot(f, L)
-    # print(res)
-    # res = np.dot(res, f)
-    # print(res)
-    # print('---------')
-    # product = f.transpose() * L
-    # print(product)
-    # print(f * L)
-    # product = product * f
-    # print(product)
-    # print('----------')
-    # a = np.array([1, 2, 3])
-    # b = np.array([2, 3, 4])
-    # I = np.array([1, 0, 1])
-    # res = I * (b - a)
-    # print(res)
-    # print(np.dot(res, res))
-
-
-
-
-
-
+    # params_list = MainClass.params_generator()
+    # print(params_list)
+    # eval_res_list = []
+    # for name in tera:
+    #     print('============' + name + '===========')
+    #     for params in params_list:
+    #         print('--------' + str(params) + '---------')
+    #         main = MainClass(name, myUtil.SIM_COS, dir_path, params[0], params[1], params[2])
+    #         eval_res = main.run()
+    #         eval_res_list.append(eval_res)
+    #     myUtil.write_eval_result(main.dir, main.name, params_list, eval_res_list)
+    main = MainClass('camel', myUtil.SIM_COS, dir_path, lambda1, lambda2, lambda3)
+    eval_res = main.run()

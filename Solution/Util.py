@@ -148,7 +148,7 @@ def write_eval_result(dir, name, params_list, eval_res_list):
         params = params_list[index]
         param_str = str(params[0]) + ',' + str(params[1]) + ',' + str(params[2])
         eval_res = eval_res_list[index]
-        eval_str = str(eval_res[0]) + ',' + str(eval_res[1]) + ',' + str(params[3])
+        eval_str = str(eval_res[0]) + ',' + str(eval_res[1]) + ',' + str(params[2])
         content.append(param_str + ' : ' + eval_str)
         index += 1
     file_path = get_evalution_result_path(dir, name)
