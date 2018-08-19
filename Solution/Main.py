@@ -92,14 +92,10 @@ class MainClass:
         while index < self.pre_version_num:
             w_index = indexes[index]
             if index < p:
-                self.w[w_index] = (theta - vector_v[w_index] ) / (2 * gamma)
+                self.w[w_index] = (theta - vector_v[index]) / (2 * gamma)
             else:
                 self.w[w_index] = 0
             index += 1
-        print('=== w:', self.w)
-        # for w in self.w:
-        #     sum += w
-        # print(sum)
 
     def calc_p(self, vector_v, gamma):
         p = vector_v.__len__()
@@ -137,16 +133,38 @@ class MainClass:
         count = 0
         evaluator = Eval.Evaluator(self.dir, self.name)
         pre_value = self.function_value()
-        while count < 5:
-            print('=== function value: ', pre_value)
+        eval_res = 0
+        while count < 7:
+            # print('-------------------')
+            print('--- function value: ', pre_value)
             self.update_f()
             self.update_w()
+            print('--- w: ', self.w)
+            # if self.is_w_even():
+            #     print('!!! w even')
+            #     break
             value = self.function_value()
             eval_res = evaluator.evaluate(self.f)
+            norm_f = Eval.Evaluator.normalize_f(self.f)
+            # for item in norm_f:
+            #     print(item)
             print(eval_res)
+            # if eval_res[0] == 0 and count > 4:
+            #     print('!!! no positive predict')
+            #     break
             pre_value = value
             count += 1
         return eval_res
+
+    def is_w_even(self):
+        diff12 = abs(self.w[0] - self.w[1])
+        diff13 = abs(self.w[0] - self.w[2])
+        diff23 = abs(self.w[1] - self.w[2])
+        diff_sum = diff12 + diff13 + diff23
+        if diff_sum < 0.1:
+            return True
+        else:
+            return False
 
     def write_result(self):
         f_path = myUtil.get_result_fpath(self.dir, self.name)
@@ -253,15 +271,17 @@ class MainClass:
 
     @classmethod
     def params_generator(cls):
-        value_set = [0.01, 0.1, 1, 10, 10000]
+        value_set1 = [0.001, 0.01, 0.1, 1, 10]
+        value_set2 = [0.01, 0.1, 1, 10, 100]
+        value_set3 = [100, 1000, 10000, 100000, 1000000, 10000000, 100000000]
         params_list = []
         index1 = 0
-        while index1 < value_set.__len__():
+        while index1 < value_set1.__len__():
             index2 = 0
-            while index2 < value_set.__len__():
-                index3 = 4
-                while index3 < value_set.__len__():
-                    params_list.append([value_set[index1], value_set[index2], value_set[index3]])
+            while index2 < value_set2.__len__():
+                index3 = 0
+                while index3 < value_set3.__len__():
+                    params_list.append([value_set1[index1], value_set2[index2], value_set3[index3]])
                     index3 += 1
                 index2 += 1
             index1 += 1
@@ -272,16 +292,15 @@ if __name__ == '__main__':
     tera = ["camel", "ivy", "jedit", "log4j", "lucene", "poi","synapse",
             "velocity", "xalan", "xerces"]
     dir_path = "C:/Users/1/Desktop/tera/"
-    lambda1 = 1
+    lambda1 = 0.1
     lambda2 = 1
-    lambda3 = 1
-    # params_list = MainClass.params_generator()
-    # print(params_list)
-    # eval_res_list = []
+    lambda3 = 100000
+    params_list = MainClass.params_generator()
+    eval_res_list = []
     # for name in tera:
-    #     print('============' + name + '===========')
+    #     print('================' + name + '================')
     #     for params in params_list:
-    #         print('--------' + str(params) + '---------')
+    #         print('--------------' + str(params) + '---------------')
     #         main = MainClass(name, myUtil.SIM_COS, dir_path, params[0], params[1], params[2])
     #         eval_res = main.run()
     #         eval_res_list.append(eval_res)

@@ -1,5 +1,6 @@
 import Solution.Util as Util
 import numpy as np
+import random
 
 
 class Evaluator:
@@ -31,7 +32,10 @@ class Evaluator:
             name = parts[0]
             label = int(parts[parts.__len__()-1])
             index = all_file_map[name]
-            truth_vector[index] = int(label)
+            label_value = int(label)
+            if label_value == 0:
+                label_value = -1
+            truth_vector[index] = label_value
         return truth_vector
 
     def read_all_file_map(self):
@@ -59,12 +63,15 @@ class Evaluator:
         index = 0
         while index < vector_truth.__len__():
             # print(vector_truth[index], vector_f[index])
+            if vector_truth[index] == 0:
+                index += 1
+                continue
             if vector_truth[index] == 1:
                 if vector_f[index] == 1:
                     self.true_positive += 1
                 else:
                     self.false_negative += 1
-            elif vector_truth[index] == 0:
+            elif vector_truth[index] == -1:
                 if vector_f[index] == -1:
                     self.true_negative += 1
                 else:
@@ -100,6 +107,11 @@ class Evaluator:
             elif vector_f[index] < 0:
                 vector_res[index] = -1
             else:
-                vector_res[index] = 0
+                rand = random.random()
+                defect_rate = 0.5
+                if rand < 0.5:
+                    vector_res[index] = 1
+                else:
+                    vector_res[index] = -1
             index += 1
         return vector_res

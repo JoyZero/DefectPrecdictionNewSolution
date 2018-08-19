@@ -154,7 +154,11 @@ def write_eval_result(dir, name, params_list, eval_res_list):
     file_path = get_evalution_result_path(dir, name)
     write_file(file_path, content)
 
-
+def print_defect_rate(dir, name):
+    all_ver_files = read_tera_all_csv(dir + name)
+    print("==============", name, "=============")
+    for file in all_ver_files:
+        print('--------', )
 
 
 if __name__ == '__main__':
