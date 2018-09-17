@@ -5,7 +5,7 @@ import random
 
 
 class MainClass:
-    initial_defect_rate = 0.5
+    initial_defect_rate = 0.2
 
     def __init__(self, name, sim_type, dir, lambda1, lambda2, lambda3):
         self.name = name
@@ -58,7 +58,7 @@ class MainClass:
             if rand < self.initial_defect_rate:
                 self.f[index] = 1
             else:
-                self.f[index] = 0
+                self.f[index] = -1
             index += 1
 
     def update_f(self):
@@ -134,27 +134,57 @@ class MainClass:
         evaluator = Eval.Evaluator(self.dir, self.name)
         pre_value = self.function_value()
         eval_res = 0
-        while count < 7:
+        while count < 20:
             # print('-------------------')
             print('--- function value: ', pre_value)
             self.update_f()
             self.update_w()
             print('--- w: ', self.w)
-            # if self.is_w_even():
-            #     print('!!! w even')
-            #     break
             value = self.function_value()
             eval_res = evaluator.evaluate(self.f)
-            norm_f = Eval.Evaluator.normalize_f(self.f)
-            # for item in norm_f:
-            #     print(item)
             print(eval_res)
-            # if eval_res[0] == 0 and count > 4:
-            #     print('!!! no positive predict')
-            #     break
             pre_value = value
             count += 1
+        new_file_paths = self.get_newfile_path_list()
+        print("======================")
+        for path in new_file_paths:
+            print('--------------------------------------')
+            new_file_res = self.read_newfile_result(path)
+            eval_res = evaluator.evaluate(self.f, new_file_res)
+            print(eval_res)
         return eval_res
+
+    def get_newfile_path_list(self):
+        file_dir = 'E:/data/dataset/tera/'
+        path = file_dir + self.name + '/' + self.name + '-newRes-'
+        models = ['randForest', 'naiveBayes', 'logistic']
+        res = []
+        for model in models:
+            path1 = path + model + '.txt'
+            path2 = path + model + '2.txt'
+            res.append(path1)
+            res.append(path2)
+        return res
+
+    def read_newfile_result(self, path):
+        with open(path, 'r') as f:
+            line = f.readline()
+        res_list = []
+        parts = line.strip().split(',')
+        for part in parts:
+            res_list.append(float(part))
+        return res_list
+
+    def read_newfile_result2(self):
+        file_dir = 'E:/data/dataset/tera/'
+        path = file_dir + self.name + '/' + self.name + '-newRes2.txt'
+        with open(path, 'r') as f:
+            line = f.readline()
+        res_list = []
+        parts = line.strip().split(',')
+        for part in parts:
+            res_list.append(float(part))
+        return res_list
 
     def is_w_even(self):
         diff12 = abs(self.w[0] - self.w[1])
@@ -187,6 +217,7 @@ class MainClass:
                 content += str(int(vector[index]))
             else:
                 content += str(vector[index])
+            index += 1
         return content
 
     def function_value(self):
@@ -291,9 +322,9 @@ class MainClass:
 if __name__ == '__main__':
     tera = ["camel", "ivy", "jedit", "log4j", "lucene", "poi","synapse",
             "velocity", "xalan", "xerces"]
-    dir_path = "C:/Users/1/Desktop/tera/"
-    lambda1 = 0.1
-    lambda2 = 1
+    dir_path = "C:/Users/Joey/Desktop/tera2/"
+    lambda1 = 0.01
+    lambda2 = 1000
     lambda3 = 100000
     params_list = MainClass.params_generator()
     eval_res_list = []
@@ -305,5 +336,7 @@ if __name__ == '__main__':
     #         eval_res = main.run()
     #         eval_res_list.append(eval_res)
     #     myUtil.write_eval_result(main.dir, main.name, params_list, eval_res_list)
-    main = MainClass('camel', myUtil.SIM_COS, dir_path, lambda1, lambda2, lambda3)
-    eval_res = main.run()
+    main = MainClass('jedit', myUtil.SIM_COS, dir_path, lambda1, lambda2, lambda3)
+    res = main.run()
+    main.write_result()
+

@@ -1,6 +1,7 @@
 import Solution.Util as Util
 import numpy as np
 import random
+import math
 
 
 class Evaluator:
@@ -56,9 +57,10 @@ class Evaluator:
         self.true_negative = 0
         self.false_negative = 0
 
-    def evaluate(self, vector_f):
+    def evaluate(self, vector_f, new_files=None):
         self.reset_data()
         vector_f = self.normalize_f(vector_f)
+        # print(vector_f)
         vector_truth = self.read_ground_truth()
         index = 0
         while index < vector_truth.__len__():
@@ -76,9 +78,26 @@ class Evaluator:
                     self.true_negative += 1
                 else:
                     self.false_positive += 1
+            else:
+                print('error')
             index += 1
+        if new_files is not None:
+            self.true_positive += new_files[0]
+            self.false_positive += new_files[1]
+            self.true_negative += new_files[2]
+            self.false_negative += new_files[3]
         print(self.true_positive, self.false_positive, self.true_negative, self.false_negative)
-        return [self.calc_precision(), self.calc_recall(), self.calc_f1measure()]
+        precision = self.calc_precision()
+        recall = self.calc_recall()
+        fmeasure = self.calc_f1measure()
+        gmean = self.calc_gmean()
+        balance = self.calc_balance()
+        if new_files is not None:
+            self.true_positive -= new_files[0]
+            self.false_positive -= new_files[1]
+            self.true_negative -= new_files[2]
+            self.false_negative -= new_files[3]
+        return [precision, recall, fmeasure, gmean, balance]
 
     def calc_precision(self):
         if self.true_positive == 0:
@@ -97,21 +116,39 @@ class Evaluator:
             return 0
         return 2 * precision * recall / (precision + recall)
 
+    def calc_gmean(self):
+        a = self.true_positive / (self.true_positive + self.false_negative)
+        b = self.true_negative / (self.true_negative + self.false_positive)
+        return math.sqrt(a * b)
+
+    def calc_balance(self):
+        pf = self.false_positive / (self.false_positive+self.true_negative)
+        pd = self.calc_recall()
+        a = math.pow(0 - pf, 2)
+        b = math.pow(1 - pd, 2)
+        return 1 - math.sqrt((a + b) / 2)
+
     @classmethod
     def normalize_f(cls, vector_f):
         vector_res = np.zeros(vector_f.__len__(), dtype=np.int)
         index = 0
+        temp = sorted(vector_f)
+        f_index = int(0.8 * vector_f.__len__())
+        # print('f_index', f_index, 'len', vector_f.__len__())
+        offset = temp[f_index]
+        # print('offset', offset)
         while index < vector_f.__len__():
-            if vector_f[index] > 0:
+            if vector_f[index] > offset:
                 vector_res[index] = 1
-            elif vector_f[index] < 0:
+            elif vector_f[index] < offset:
                 vector_res[index] = -1
             else:
                 rand = random.random()
                 defect_rate = 0.5
-                if rand < 0.5:
+                if rand < defect_rate:
                     vector_res[index] = 1
                 else:
                     vector_res[index] = -1
             index += 1
+        # print('count', count)
         return vector_res
